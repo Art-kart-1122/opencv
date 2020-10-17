@@ -87,6 +87,7 @@ def orb(img1, img2, hash_name):
         return 0, 0, float('inf')
 
     time_proc = tm.time() - time_start
+
     #--------
 
     good_points = get_good_points(matches, 0.7)
@@ -129,6 +130,7 @@ def sift(img1, img2, hash_name):
 
     #---------
     time_proc = tm.time() - time_start
+
     #--------
 
     good_points = get_good_points(matches, 0.7)
@@ -149,6 +151,8 @@ def sift(img1, img2, hash_name):
     return time_proc, relative_num_of_correct_features, avr_dist
 
 def compare_correct_data(origin, data_correct, hash = ''):
+    file = open("compare_result/compare_correct_data.txt", "a+")
+
     time = []
     correct = []
     dist = []
@@ -162,8 +166,16 @@ def compare_correct_data(origin, data_correct, hash = ''):
     full_dist_SIFT = 0
 
     for img in data_correct:
-        orb_time, orb_correct, orb_dist = orb(origin, img, f"ORB/result_correct/{hash}{tm.time()}")
-        sift_time, sift_correct, sift_dist = sift(origin, img, f"SIFT/result_correct/{tm.time()}")
+
+        img_path = f"/result_correct/{hash}{tm.time()}"
+        file.write(f"{img_path} \n")
+
+        orb_time, orb_correct, orb_dist = orb(origin, img, f"ORB{img_path}")
+        sift_time, sift_correct, sift_dist = sift(origin, img, f"SIFT{img_path}")
+
+        file.write(f"ORB time {orb_time} \n")
+        file.write(f"Sift time {sift_time}")
+        file.write('\n\n')
 
         if (math.isinf(orb_dist) or math.isinf(sift_dist)):
             continue
@@ -196,10 +208,13 @@ def compare_correct_data(origin, data_correct, hash = ''):
                  f"Full Dist ORB: {full_dist_ORB}\n" \
                  f"Full Dist SIFT: {full_dist_SIFT}\n\n\n"
 
-    return result
+    file.write(result)
+    file.close()
 
 
 def compare_wrong_data(origin, data_wrong, hash = ''):
+    file = open("compare_result/compare_wrong_data.txt", "a+")
+
     time = []
     correct = []
     dist = []
@@ -214,8 +229,16 @@ def compare_wrong_data(origin, data_wrong, hash = ''):
     full_dist_SIFT = 0
 
     for img in data_wrong:
-        orb_time, orb_correct, orb_dist = orb(origin, img, f"ORB/result_wrong/{hash}{tm.time()}")
-        sift_time, sift_correct, sift_dist = sift(origin, img, f"SIFT/result_wrong/{hash}{tm.time()}")
+
+        img_path = f"/result_wrong/{hash}{tm.time()}"
+        file.write(f"{img_path} \n")
+
+        orb_time, orb_correct, orb_dist = orb(origin, img, f"ORB{img_path}")
+        sift_time, sift_correct, sift_dist = sift(origin, img, f"SIFT{img_path}")
+
+        file.write(f"ORB time {orb_time}\n")
+        file.write(f"Sift time {sift_time}")
+        file.write('\n\n')
 
         if (math.isinf(orb_dist) or math.isinf(sift_dist)):
             continue
@@ -248,7 +271,8 @@ def compare_wrong_data(origin, data_wrong, hash = ''):
                  f"Full Dist ORB: {full_dist_ORB}\n" \
                  f"Full Dist SIFT: {full_dist_SIFT}\n\n\n"
 
-    return result
+    file.write(result)
+    file.close()
 
 
 origin = cv2.imread("data/train_data/original.png", cv2.IMREAD_GRAYSCALE)
@@ -261,10 +285,10 @@ data_wrong = [cv2.imread(_, cv2.IMREAD_GRAYSCALE) for _ in data_wrong_path]
 data_correct_resize = [cv2.resize(cv2.imread(_, cv2.IMREAD_GRAYSCALE), (0,0), fx=0.5, fy=0.5) for _ in data_correct_path]
 data_wrong_resize = [cv2.resize(cv2.imread(_, cv2.IMREAD_GRAYSCALE), (0,0), fx=0.5, fy=0.5) for _ in data_wrong_path]
 
-print(compare_correct_data(origin, data_correct))
-print(compare_wrong_data(origin, data_wrong))
+compare_correct_data(origin, data_correct)
+compare_wrong_data(origin, data_wrong)
 
-print(compare_correct_data(origin, data_correct_resize, 'resize'))
-print(compare_wrong_data(origin, data_wrong_resize, 'resize'))
+compare_correct_data(origin, data_correct_resize, 'resize')
+compare_wrong_data(origin, data_wrong_resize, 'resize')
 
 
