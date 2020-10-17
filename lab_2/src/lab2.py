@@ -50,6 +50,8 @@ def get_is_detected_and_object(good_points, kp_img1, kp_img2, img1, img2, MIN_MA
 
         h, w = img1.shape
         pts = np.float32([[0, 0], [0, h], [w, h], [w, 0]]).reshape(-1, 1, 2)
+        if(matrix is None):
+            return False, img2
         dst = cv2.perspectiveTransform(pts, matrix)
 
         img2 = cv2.cvtColor(img2, cv2.COLOR_GRAY2BGR)
@@ -62,7 +64,7 @@ def get_is_detected_and_object(good_points, kp_img1, kp_img2, img1, img2, MIN_MA
 def save_to_result(img1, kp_img1, img_detected_obj, kp_img2, good_points, is_detected, hash_name):
 
     match = cv2.drawMatches(img1, kp_img1, img_detected_obj, kp_img2, good_points, None, flags=2)
-    cv2.imwrite("result/" + hash_name + "_" + ("good" if is_detected else "jopa") + ".jpg", match)
+    cv2.imwrite("result1/" + hash_name + "_" + ("good" if is_detected else "jopa") + ".jpg", match)
 
 
 
@@ -151,7 +153,7 @@ def sift(img1, img2, hash_name):
     return time_proc, relative_num_of_correct_features, avr_dist
 
 def compare_correct_data(origin, data_correct, hash = ''):
-    file = open("compare_result/compare_correct_data.txt", "a+")
+    file = open("compare_result1/compare_correct_data.txt", "a+")
 
     time = []
     correct = []
@@ -197,7 +199,7 @@ def compare_correct_data(origin, data_correct, hash = ''):
         dist_win = "orb" if orb_dist < sift_dist else "sift"
         dist.append(dist_win)
 
-        result = f"\nCorrect Data {hash} \n" \
+    result = f"\nCorrect Data {hash} \n" \
                  f"Time win: ORB {time.count('orb')}; SIFT {time.count('sift')}\n" \
                  f"Correct win: ORB {correct.count('orb')}; SIFT {correct.count('sift')}\n" \
                  f"Distance win: ORB {dist.count('orb')}; SIFT {dist.count('sift')}\n" \
@@ -213,7 +215,7 @@ def compare_correct_data(origin, data_correct, hash = ''):
 
 
 def compare_wrong_data(origin, data_wrong, hash = ''):
-    file = open("compare_result/compare_wrong_data.txt", "a+")
+    file = open("compare_result1/compare_wrong_data.txt", "a+")
 
     time = []
     correct = []
@@ -260,7 +262,7 @@ def compare_wrong_data(origin, data_wrong, hash = ''):
         dist_win = "orb" if orb_dist > sift_dist else "sift"
         dist.append(dist_win)
 
-        result = f"\nWrong Data {hash} \n" \
+    result = f"\nWrong Data {hash} \n" \
                  f"Time win: ORB {time.count('orb')}; SIFT {time.count('sift')}\n" \
                  f"Correct win: ORB {correct.count('orb')}; SIFT {correct.count('sift')}\n" \
                  f"Distance win: ORB {dist.count('orb')}; SIFT {dist.count('sift')}\n" \
@@ -275,9 +277,10 @@ def compare_wrong_data(origin, data_wrong, hash = ''):
     file.close()
 
 
-origin = cv2.imread("data/train_data/original.png", cv2.IMREAD_GRAYSCALE)
-data_correct_path = glob.glob("data/correct_test_data/*.jpg")
-data_wrong_path = glob.glob("data/wrong_test_data/*.jpg")
+origin = cv2.imread("data1/train_data/origin.png", cv2.IMREAD_GRAYSCALE)
+
+data_correct_path = glob.glob("data1/correct_data_test/*.jpg")
+data_wrong_path = glob.glob("data1/wrong_data_test/*.jpg")
 
 data_correct = [cv2.imread(_, cv2.IMREAD_GRAYSCALE) for _ in data_correct_path]
 data_wrong = [cv2.imread(_, cv2.IMREAD_GRAYSCALE) for _ in data_wrong_path]
