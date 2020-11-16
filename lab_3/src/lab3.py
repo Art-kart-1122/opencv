@@ -3,6 +3,7 @@ import numpy as np
 import glob
 import random
 import math
+import time as tm
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn import ensemble
@@ -72,28 +73,28 @@ def compute_data(X, n=8):
 
     return X_res
 
-X_dataset_1_true = compute_data(glob.glob(PATH_DATASET_1 + "/correct_data_test/*.jpg"))
-Y_dataset_1_true = np.array([1 for i in range(X_dataset_1_true.shape[0])])
+X_dataset_2_true = compute_data(glob.glob(PATH_DATASET_2 + "/correct_data_test/*.jpg"))
+Y_dataset_2_true = np.array([1 for i in range(X_dataset_2_true.shape[0])])
 
-X_dataset_1_wrong = compute_data(glob.glob(PATH_DATASET_2 + "/wrong_data_test/*.jpg"))
-Y_dataset_1_wrong = np.array([0 for i in range(X_dataset_1_wrong.shape[0])])
-
-X_dataset_2_wrong = compute_data(glob.glob(PATH_DATASET_2 + "/correct_data_test/*.jpg"))
+X_dataset_2_wrong = compute_data(glob.glob(PATH_DATASET_2 + "/wrong_data_test/*.jpg"))
 Y_dataset_2_wrong = np.array([0 for i in range(X_dataset_2_wrong.shape[0])])
 
+X_dataset_1_wrong = compute_data(glob.glob(PATH_DATASET_1 + "/wrong_data_test/*.jpg"))
+Y_dataset_1_wrong = np.array([0 for i in range(X_dataset_1_wrong.shape[0])])
 
-X_dataset = np.concatenate((X_dataset_1_true, X_dataset_1_wrong), axis=0)
 
-X_dataset_1 = np.concatenate((X_dataset, X_dataset_2_wrong), axis=0)
+X_dataset = np.concatenate((X_dataset_2_true, X_dataset_2_wrong), axis=0)
 
-Y_dataset = np.concatenate((Y_dataset_1_true, Y_dataset_1_wrong), axis=0)
-Y_dataset_1 = np.concatenate((Y_dataset, Y_dataset_2_wrong), axis=0)
+X_dataset_1 = np.concatenate((X_dataset, X_dataset_1_wrong), axis=0)
+
+Y_dataset = np.concatenate((Y_dataset_2_true, Y_dataset_2_wrong), axis=0)
+Y_dataset_1 = np.concatenate((Y_dataset, Y_dataset_1_wrong), axis=0)
 
 
 X_dataset_1_train, X_dataset_1_test, Y_dataset_1_train, Y_dataset_1_test = train_test_split(X_dataset_1, Y_dataset_1, test_size=0.2)
 
 clf = ensemble.RandomForestClassifier(random_state=0, max_depth=5, max_features='auto', min_samples_split=0.3 )
-print(X_dataset_1_train)
+#print(X_dataset_1_train)
 clf.fit(X_dataset_1_train, Y_dataset_1_train)
 #y_pred = clf.predict(X_dataset_1_test)
 
@@ -183,7 +184,9 @@ def compute_hist(frame, n=8):
             for j in range(pt_arr.shape[0]):
                 X_res[0,j] = 1 / pt_arr.shape[0]
     else:
+        time_start = tm.time()
         kmeans = KMeans(n_clusters=n, random_state=0).fit(pt_arr)
+        print(tm.time() - time_start)
         list_masks = [ kmeans.labels_ == i for i in range(n)]
 
         j = 0
@@ -196,7 +199,7 @@ def compute_hist(frame, n=8):
     return X_res
 
 
-cap = cv2.VideoCapture('dataset_1.mp4')
+cap = cv2.VideoCapture('dataset_2.mp4')
 
 if (cap.isOpened() == False):
     print("Unable to read camera feed")
@@ -204,15 +207,23 @@ if (cap.isOpened() == False):
 frame_width = int(cap.get(4))
 frame_height = int(cap.get(3))
 
-out = cv2.VideoWriter('orb_dataset_1.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
+out = cv2.VideoWriter('orb_dataset_2_time_kmeans.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
 
 while(True):
     ret, frame = cap.read()
 
     if ret == True:
         frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
+
         X = compute_hist(frame)
+
+
         class_object = clf.predict(X)
+
+
+
+
         position = (25, 350)
         cv2.putText(frame, 'Class ' + str(class_object), position, cv2.FONT_HERSHEY_SIMPLEX, 2, (209, 80, 0, 255), 3)
         out.write(frame)
